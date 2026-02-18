@@ -6,30 +6,33 @@ class KPIs:
 
 class SalesKPIs(KPIs):
 
-    def total_revenue(self) -> float:
-        return self.df['amount'].sum()
-         
-    def total_quantity(self) -> int:
-        return self.df['quantity'].sum()
-    
     def total_orders(self) -> int:
         return self.df['order_number'].nunique()
+    
+    def total_revenue(self) -> float:
+        return self.df['revenue'].sum()
+             
+    def total_profit(self) -> float:
+        return self.df['profit'].sum()
+    
+    def total_unit_sold(self) -> int:
+        return self.df['quantity'].sum()
     
     def avg_order_value(self) -> float:
         return self.total_revenue() / self.total_orders()
     
-    def avg_order_quantity(self) -> float:
-        return self.total_quantity() / self.total_orders()
+    def avg_selling_price(self) -> float:
+        return self.df['revenue'].sum() / self.df['quantity'].sum()
 
-    def avg_shipping_time(self):
-        return (self.df['ship_date'] - self.df['order_date']).mean()
+    def avg_unit_per_order(self) -> float:
+        return self.df.groupby('order_number')['quantity'].sum().mean()
+
+    def profit_margin(self) -> float:
+        return  self.total_profit() / self.total_revenue() * 100
 
     def avg_delivery_time(self):
         return (self.df['delivery_date'] - self.df['order_date']).mean()
     
-    def avg_shipping_to_delivery_time(self):
-        return (self.df['delivery_date'] - self.df['ship_date']).mean()
-
     def revenue_by_year(self) -> pd.DataFrame:
         return (
             self.df.groupby("year", as_index=False)["amount"]
@@ -95,7 +98,7 @@ class SalesKPIs(KPIs):
         df['yoy'] = ((df['profit'] - df['profit'].shift(1))/df['profit'].shift(1)*100).round(2)
         return df[['year', 'yoy']]
     
-    def revenue_profit_by_country(self) -> pd.DataFrame:
+    def revenue_and_profit_by_country(self) -> pd.DataFrame:
         df = self.df.groupby('country', as_index=False)[['cost', 'price', 'amount']].sum()
         df['profit'] = df['price'] - df['cost']
         return (
@@ -105,16 +108,18 @@ class SalesKPIs(KPIs):
         )
 
 class CustomerKPIs(KPIs):
+
     def total_customer(self) -> int:
         return self.df['customer_key'].nunique()
     
-    def customer_avg_order(self) -> float:
-        df = self.df.groupby('customer_key', as_index= False)['customer_key'].count()
-        return df['customer_key'].mean()
+    def avg_order_per_customer(self) -> float:
+        return self.df.groupby('customer_key', as_index= False)['customer_key'].count().mean()
     
-    def customer_avg_order_value(self) -> float:
-        df = self.df.groupby('customer_key', as_index=False)['amount'].sum()
-        return df['amount'].mean()
+    def avg_revenue_per_customer(self) -> float:
+        return self.df.groupby('customer_key', as_index=False)['revenue'].sum().mean()
+
+    def customer_lifetime_value(self) -> float:
+        return self.df.groupby('customer_key')['revenue'].sum().mean()
 
     def customer_repeat_rate(self) -> float:
         df = self.df.groupby('customer_key', as_index=False)['customer_key'].count()
@@ -145,28 +150,83 @@ class CustomerKPIs(KPIs):
         df['percentage'] = df['customer_key']/self.total_customer()*100
         return  df[['gender', 'percentage']] # type:ignore
 
-
     def revenue_by_gender_marital_status(self):
         return (
             self.df.pivot_table(index='gender', columns='marital_status', values='amount', aggfunc='sum')
         )
     
-    def customer_revenue(self) -> pd.DataFrame:
+class ProductKPIs(KPIs):
+
+# Product-Level Metrics
+
+    def revenue_per_product(self) -> pd.DataFrame:
         return (
-            self.df.groupby("customer_key", as_index=False)["amount"]
+            self.df.groupby('product_key', as_index=False)['revenue']
             .sum()
-            .sort_values("amount", ascending=False) # type: ignore
-            .rename(columns={"amount": "customer_revenue"})
+            .sort_values('revenue', ascending=False)
+        ) #type:ignore
+
+    def units_sold_per_product(self):
+        return (
+            self.df.groupby('product_key', as_index=False)['quantity']
+            .sum()
+            .sort_values('quantity', ascending=False)
+        ) #type:ignore
+    
+    def profit_per_product(self):
+        return (
+            self.df.groupby('product_key', as_index=False)['profit']
+            .sum()
+            .sort_values('profit', ascending=False)
+        ) #type:ignore
+    
+    def avg_product_price(self):
+        return (
+            self.df.groupby('product_key', as_index=False)['price']
+            .mean()
+            .sort_values('price', ascending=False)
+        ) #type:ignore
+    
+# Product Popularity Metrics
+
+    def order_per_product(self):
+        return (
+            self.df.groupby('product_key', as_index=False)['order_number']
+            .nunique()
+            .sort_values('order_number', ascending=False)
+        ) #type:ignore
+
+    def customer_per_product(self):
+        return (
+            self.df.groupby('product_key', as_index=False)['customer_key']
+            .unique()
+            .sort_values('customer_key', ascending=False)
+        ) #type:ignore
+
+# Category-Level Metrics
+
+    def category_revenue(self) -> pd.DataFrame:
+        return (
+            self.df.groupby('category', as_index=False)['revenue']
+            .sum()
+            .sort_values('revenue', ascending=False) #type:ignore             
         ) 
 
-    def customer_order_counts(self) -> pd.DataFrame:
+    def category_profit(self) -> pd.DataFrame:
         return (
-            self.df.groupby("customer_key", as_index=False)["order_number"]
-            .nunique()
-            .rename(columns={"order_number": "order_count"})
-        ) # type: ignore
+            self.df.groupby('category', as_index=False)['profit']
+            .sum()
+            .sort_values('profit', ascending=False)
+        ) #type:ignore
+
+    def category_units(self) -> pd.DataFrame:
+        return (
+            self.df.groupby('category', as_index=False)['quantity']
+            .sum()
+            .sort_values('quantity', ascending=False)
+        ) #type:ignore
+
     
-class ProductKPIs(KPIs):
 
     def top_products_by_revenue(self, n: int = 10) -> pd.DataFrame:
         return (
@@ -176,13 +236,6 @@ class ProductKPIs(KPIs):
             .head(n)
         ) 
     
-    def category_by_revenue(self) -> pd.DataFrame:
-        return (
-            self.df.groupby('category', as_index=False)['amount']
-            .sum()
-            .sort_values('amount', ascending=False) # type: ignore
-            .rename(columns={'amount':'revenue'})               
-        ) 
     
     def product_sales_volume(self) -> pd.DataFrame:
         return (
