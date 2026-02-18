@@ -20,6 +20,9 @@ def fact_sales() -> pd.DataFrame:
     df = df.merge(product, on='product_key', how='left')
     df = df.merge(dim_date, on='date_key', how='left')
 
+    df['revenue'] = df['amount']
+    df['profit'] = df['revenue'] - (df['cost'] * df['quantity'])
+    
     return standardize_dates(df, ['order_date', 'ship_date', 'delivery_date'])
 
 def format_number(value):
