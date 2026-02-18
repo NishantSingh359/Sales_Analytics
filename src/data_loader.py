@@ -40,7 +40,10 @@ def create_date_table() -> None:
 
     df = df.to_csv(r"data\dim\dim_date.csv", index=False)
 
-if __name__ == '__main__':
+def main():
     load_gold()
     create_date_table()
+
+if __name__ == "__main__":
+    main()
 
