@@ -1,0 +1,50 @@
+fontname: "Times New Roman"
+
+title:
+  size: 20
+  color: "gray"
+  weight: "bold"
+  style: "normal" #'normal', 'italic', 'oblique'
+  loc: "left"
+  pad: 20
+
+axis:
+  xaxis:
+    label:
+      size: 15
+      color: "gray"
+      weight: "normal"
+      style: "normal"
+
+    ticks:
+      size: 12
+      color: "gray"
+      rotation: 90
+      weight: "normal"
+      style: "normal"
+
+  yaxis:
+    label:
+      size: 15
+      color: "gray"
+      weight: "normal"
+      style: "normal"
+
+    ticks:
+      size: 12
+      color: "gray"
+      rotation: 0
+      weight: "normal"
+      style: "normal"
+
+  tick:
+    size: 5
+    color: "gray"
+
+legend:
+  loc: 1
+  framealpha: 0.5
+  fontsize: 11
+  edgecolor: "white"
+  facecolor: "white"
+  frameon: True
