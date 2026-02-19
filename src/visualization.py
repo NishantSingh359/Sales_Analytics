@@ -1,3 +1,4 @@
+import yaml
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,20 +46,24 @@ def customer_kpis(df: pd.DataFrame) -> pd.DataFrame:
         "Total Customer",
         "Avg Order Per Customer",
         "Avg Revenue Per Customer",
+        "Customer Lifespan",
+        "Purchase_Frequency",
         "Customer Lifetime Value",
         "Customer Repeat Rate",
-        "Purchase_Frequency",
     ]
     values = [
         co.format_number(ckpi.total_customer()),
         co.format_number(ckpi.avg_order_per_customer()),
         co.format_number(ckpi.avg_revenue_per_customer()),
-        co.format_number(ckpi.customer_lifetime_value()),
-        co.format_number(ckpi.customer_repeat_rate()),
+        co.format_number(ckpi.customer_lifespan()) + " Month's",
         co.format_number(ckpi.purchase_frequency()),
+        co.format_number(ckpi.customer_lifetime_value()),
+        co.format_number(ckpi.customer_repeat_rate()) + "%",
     ]
-    return pd.DataFrame({"KPIs": kpis, "Values": values})
 
+    df = pd.DataFrame({"KPIs": kpis, "Values": values})
+
+    return df
 
 
 class PlotBase:
@@ -68,12 +73,12 @@ class PlotBase:
         y1,
         y2=np.nan,
         y3=np.nan,
-        title=None,
-        xlable=None,
-        ylable=None,
-        label1=np.nan,
-        label2=np.nan,
-        label3=np.nan,
+        title="Title",
+        xlabel="",
+        ylabel="",
+        label1=None,
+        label2=None,
+        label3=None,
         legend=False,
         fsize: tuple = (6, 4),
     ):
@@ -82,8 +87,8 @@ class PlotBase:
         self.y2 = y2
         self.y3 = y3
         self.title = title
-        self.xlable = xlable
-        self.ylable = ylable
+        self.xlabel = xlabel
+        self.ylabel = ylabel
         self.label1 = label1
         self.label2 = label2
         self.label3 = label3
@@ -91,7 +96,19 @@ class PlotBase:
         self.fsize = fsize
 
     def decoration(self):
+
+        cfg = self.config()
+        font = cfg["fontname"]
+        title = cfg["title"]
+        xaxis = cfg["axis"]["xaxis"]
+        yaxis = cfg["axis"]["yaxis"]
+        tick = cfg["axis"]["tick"]
+        legend = cfg["legend"]
+
         plt.figure(figsize=self.fsize)
+        ax = plt.gca()
+        ax.set_axisbelow(True)
+
         self.plot(
             self.x,
             self.y1,
@@ -100,51 +117,96 @@ class PlotBase:
             self.label1,
             self.label2,
             self.label3,
-            self.legend,
         )
-        plt.title(self.title, fontdict=dict(size=18, color="gray"), loc="left", pad=30)
+
+        plt.grid(True, axis="y", color="gray", alpha=0.5)
+
+        plt.title(
+            self.title,
+            loc=title["loc"],
+            pad=title["pad"],
+            fontdict=dict(
+                size=title["size"],
+                color=title["color"],
+                weight=title["weight"],
+                style=title["style"],
+                fontname=font,
+            ),
+        )
+
         plt.gca().spines["top"].set_visible(False)
         plt.gca().spines["right"].set_visible(False)
         plt.gca().spines["left"].set_color("gray")
         plt.gca().spines["bottom"].set_color("gray")
-        plt.xlabel(self.xlable, fontdict=dict(size=15, color="gray"))
-        plt.ylabel(self.ylable, fontdict=dict(size=12, color="gray"))
-        plt.tick_params(color="gray")
 
-        plt.xticks(size=12, rotation=90, color="gray")
-        plt.yticks(size=12, color="gray")
+        plt.gca().yaxis.set_major_formatter(formatter)
+
+        plt.xlabel(
+            self.xlabel,
+            fontdict=dict(
+                size=xaxis["label"]["size"],
+                color=xaxis["label"]["color"],
+                weight=xaxis["label"]["weight"],
+                style=xaxis["label"]["style"],
+                fontname=font,
+            ),
+        )
+
+        plt.ylabel(
+            self.ylabel,
+            fontdict=dict(
+                size=yaxis["label"]["size"],
+                color=yaxis["label"]["color"],
+                weight=yaxis["label"]["weight"],
+                style=yaxis["label"]["style"],
+                fontname=font,
+            ),
+        )
+
+        plt.xticks(
+            size=xaxis["ticks"]["size"],
+            color=xaxis["ticks"]["color"],
+            weight=xaxis["ticks"]["weight"],
+            style=xaxis["ticks"]["style"],
+            fontname=font,
+            rotation=xaxis["ticks"]["rotation"],
+        )
+        plt.yticks(
+            size=yaxis["ticks"]["size"],
+            color=yaxis["ticks"]["color"],
+            weight=yaxis["ticks"]["weight"],
+            style=yaxis["ticks"]["style"],
+            fontname=font,
+            rotation=yaxis["ticks"]["rotation"],
+        )
+
+        plt.tick_params(size=tick["size"], color=tick["color"])
+
+        if self.legend:
+            plt.legend(
+                loc=legend["loc"],
+                framealpha=legend["framealpha"],
+                fontsize=legend["fontsize"],
+                edgecolor=legend["edgecolor"],
+                facecolor=legend["facecolor"],
+                frameon=legend["frameon"],
+            )
+
+        plt.savefig(f"../outputs/figures/{self.title}.jpg", dpi=300, bbox_inches="tight")
+        plt.show()
+
+    def config(self):
+        with open("C:\\Users\\TUF\\OneDrive\\Documents\\Code\\Vs Code\\sales_analytics\\src\\config\\config.yaml") as f:
+            cfg = yaml.full_load(f)
+        return cfg
 
     @abstractmethod
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
+    def plot(self, x, y1, y2, y3, label1, label2, label3):
         pass
 
 
-class LinePlotLabel(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
-        sns.lineplot(
-            x=x,
-            y=y1,
-            color="#111111",
-            marker="o",
-            ms=9,
-            markeredgecolor="#111111",
-            markerfacecolor="white",
-            markeredgewidth=2,
-            linewidth=2,
-        )
-        plt.gca().axes.get_yaxis().set_visible(False) # type: ignore
-        plt.gca().spines["left"].set_visible(False)
-        for i in range(len(y1)):
-            plt.text(
-                i - y2,
-                y1.iloc[i] + y3,
-                co.format_number(y1.iloc[i]),
-                fontdict=dict(color="#242424", size=11),
-            )
-
-
 class LinePlot(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
+    def plot(self, x, y1, y2, y3, label1, label2, label3):
         ax = plt.gca()
         ax.set_axisbelow(True)
         sns.lineplot(
@@ -183,51 +245,28 @@ class LinePlot(PlotBase):
             linewidth=2,
             label=label3,
         )
-        ax.grid(True, axis="y", color="gray", alpha=0.5)
-        plt.gca().yaxis.set_major_formatter(formatter)
-        plt.legend().set_visible(legend)
-
-
-class ColumnPlotLabel(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
-        colors = ["black" if i > 0 else "gray" for i in y1]
-        plt.bar(x, y1, color=colors, width=0.5)
-        plt.gca().axes.get_yaxis().set_visible(False)
-        plt.gca().spines["left"].set_visible(False)
-        for i in range(len(y1)):
-            plt.text(
-                i - y2,
-                y1.iloc[i] + y3,
-                co.format_number(y1.iloc[i]),
-                fontdict=dict(color="#242424", size=11),
-            )
 
 
 class ColumnPlot(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
-        ax = plt.gca()
-        ax.set_axisbelow(True)
+    def plot(self, x, y1, y2, y3, label1, label2, label3):
         sns.barplot(x=x, y=y1, color="#111111", width=0.3, label=label1)
-        sns.barplot(x=x, y=y2, color="#777777", width=0.3, label=label2)
-        sns.barplot(x=x, y=y3, color="#BBBBBB", width=0.3, label=label3)
-        ax.grid(True, axis="y", color="gray", alpha=0.5)
-        plt.gca().yaxis.set_major_formatter(formatter)
-        plt.legend().set_visible(legend)
+        sns.barplot(x=x, y=y2, color="#777777", width=0.15, label=label2)
+        sns.barplot(x=x, y=y3, color="#BBBBBB", width=0.1, label=label3)
+
 
 
 class StackedColumnPlot(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
+    def plot(self, x, y1, y2, y3, label1, label2, label3):
         ax = plt.gca()
         ax.set_axisbelow(True)
         sns.barplot(x=x, y=y1, color="black", width=0.3, label=label1)
         sns.barplot(x=x, y=y2, bottom=y1, color="gray", width=0.3, label=label2)
         ax.grid(True, axis="y", color="gray", alpha=0.5)
-        plt.gca().yaxis.set_major_formatter(formatter)
-        plt.legend().set_visible(legend)
+
 
 
 class CombinePlot(PlotBase):
-    def plot(self, x, y1, y2, y3, label1, label2, label3, legend):
+    def plot(self, x, y1, y2, y3, label1, label2, label3):
         ax = plt.gca()
         ax.set_axisbelow(True)
         sns.barplot(x=x, y=y1, color="black", width=0.4, label=label1)
@@ -242,6 +281,4 @@ class CombinePlot(PlotBase):
             linewidth=2,
             label=label2,
         )
-        ax.grid(True, axis="y", color="gray", alpha=0.5)
-        plt.gca().yaxis.set_major_formatter(formatter)
-        plt.legend().set_visible(legend)
+
