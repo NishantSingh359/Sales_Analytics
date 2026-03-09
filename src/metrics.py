@@ -20,27 +20,29 @@ class SalesKPIs(KPIs):
     def total_unit_sold(self) -> int:
         return self.df["quantity"].sum()
 
-    def avg_order_value(self) -> float:
-        return self.total_revenue() / self.total_orders()
-
     def avg_selling_price(self) -> float:
         return self.df["revenue"].sum() / self.df["quantity"].sum()
 
     def avg_unit_per_order(self) -> float:
         return self.df.groupby("order_number")["quantity"].sum().mean()
 
-    def profit_margin(self) -> float:
-        return self.total_profit() / self.total_revenue() * 100
-
-    def avg_delivery_time(self):
-        return (self.df["delivery_date"] - self.df["order_date"]).mean()
+    def orders_by_year(self) -> pd.DataFrame:
+        return (
+            self.df.groupby("year", as_index=False)["order_number"]
+            .nunique()
+            .rename(columns={"order_number": "total_order"})
+        ) # type: ignore     
 
     def revenue_by_year(self) -> pd.DataFrame:
         return (
-            self.df.groupby("year", as_index=False)["amount"]
+            self.df.groupby("year", as_index=False)["revenue"]
             .sum()
-            .rename(columns={"amount": "total_revenue"})
         )  # type: ignore
+
+    def avg_order_value(self) -> pd.DataFrame:
+        df = pd.merge(self.revenue_by_year(), self.orders_by_year(), how="left", on="year")
+        df['aov'] = df['revenue']/df['total_order']
+        return df[['year', 'aov']]
 
     def revenue_by_month(self) -> pd.DataFrame:
         return (
@@ -51,32 +53,27 @@ class SalesKPIs(KPIs):
                 values="amount",
                 aggfunc="sum",
             )
-            .reset_index()
-            .drop("month", axis=1)
+            .reset_index(drop=True)
         )  # type: ignore
 
     def profit_by_year(self) -> pd.DataFrame:
-        df = self.df.pivot_table(
-            index=["year"], values=["cost", "price"], aggfunc="sum"
-        )
-        df.reset_index(inplace=True)
-        df["profit"] = df["price"] - df["cost"]
-        return df[["year", "profit"]]
+        return (
+            self.df.groupby("year", as_index=False)["profit"].sum()
+        ) #type: ignore
+    
 
     def profit_by_month(self) -> pd.DataFrame:
-        df = self.df.pivot_table(
-            index=["month", "month_name"],
-            columns=["year"],
-            values=["cost", "price"],
-            aggfunc="sum",
-        )
-        df = df.reset_index()
-        df1 = pd.DataFrame()
-        df1["month_name"] = df["month_name"]
-        df1[2011] = df["price"][2011] - df["cost"][2011]
-        df1[2012] = df["price"][2012] - df["cost"][2012]
-        df1[2013] = df["price"][2013] - df["cost"][2013]
-        return df1
+        return (
+            pd.pivot_table(
+                data=self.df,
+                index=["month", "month_name"],
+                columns=["year"],
+                values="profit",
+                aggfunc="sum",
+            )
+            .reset_index()
+            .drop("month", axis=1)
+        )  # type: ignore
 
     def last_year_mom_growth_r(self) -> pd.DataFrame:
         df = self.df.groupby(["year", "month", "month_name"], as_index=False)[
@@ -90,36 +87,22 @@ class SalesKPIs(KPIs):
         return df
 
     def yoy_growth_r(self) -> pd.DataFrame:
-
-        # Count month per year
-        df = self.df.groupby("year", as_index=False)["month"].nunique()
-        year = df["year"][df["month"] == 12]  # type: ignore
-
-        # Keep only complete years
         df = self.df.groupby("year", as_index=False)["amount"].sum()
-        df = df[df["year"].isin(year)]
 
-        # Calculate YoY Growth
         df["yoy"] = (
             (df["amount"] - df["amount"].shift(1)) / df["amount"].shift(1) * 100
         ).round(2)
         df = df[["year", "yoy"]]
         return df
 
-    def last_year_mom_growth_p(self):
-        df = self.profit_by_month()
-        df["mom"] = (df[2013] - df[2013].shift(1)) / df[2013].shift(1) * 100
-        return df[["month_name", "mom"]]
-
     def yoy_growth_p(self):
-        df = self.df.groupby("year", as_index=False)["month"].nunique()
-        year = df["year"][df["month"] == 12]  # type: ignore
-        df = self.profit_by_year()
-        df = df[df["year"].isin(year)]
+        df = self.df.groupby("year", as_index=False)["profit"].sum()
+
         df["yoy"] = (
             (df["profit"] - df["profit"].shift(1)) / df["profit"].shift(1) * 100
         ).round(2)
-        return df[["year", "yoy"]]
+        df = df[["year", "yoy"]]
+        return df
 
     def revenue_and_profit_by_country(self) -> pd.DataFrame:
         df = self.df.groupby("country", as_index=False)[
@@ -131,7 +114,10 @@ class SalesKPIs(KPIs):
             .sort_values("amount", ascending=False)
             .rename(columns={"amount": "revenue"})
         )
-
+    
+    def monthly_revenue(self) -> pd.Series:
+        return self.df.groupby(self.df['order_date'].dt.to_period('M'))['revenue'].sum()
+    
 
 class CustomerKPIs(KPIs):
 
@@ -141,30 +127,36 @@ class CustomerKPIs(KPIs):
     def avg_order_per_customer(self) -> float:
         return self.df.groupby("customer_key")["order_number"].count().mean()
 
-    def avg_revenue_per_customer(self) -> float:
-        return self.df.groupby("customer_key")["revenue"].sum().mean()
-
-    def customer_lifespan(self) -> float:
-        return (
-            self.df.groupby("customer_key")["order_date"]
-            .agg(lambda x: (x.max() - x.min()).days / 30)
-            .mean()
-        )
+    def ARPU(self) -> float:
+        df = self.df.groupby(["year", "customer_key"], as_index=False)["revenue"].sum()
+        return df.groupby("year", as_index=False)["revenue"].mean()
 
     def customer_repeat_rate(self) -> float:
-        df = self.df.groupby("customer_key", as_index=False)["customer_key"].count()
+        df = self.df.groupby(["year", "customer_key"], as_index=False)[
+            "customer_key"
+        ].count()
         repeat_customer = df[df["customer_key"] > 1]
-        return len(repeat_customer) / self.total_customer() * 100  # type: ignore
+        repeat_customer_by_year = repeat_customer.groupby("year", as_index=False)[
+            "customer_key"
+        ].count()
+        total_customer_by_year = self.df.groupby("year", as_index=False)[
+            "customer_key"
+        ].nunique()
+        repeat_customer_by_year["repeat_rate"] = (
+            repeat_customer_by_year["customer_key"] / total_customer_by_year["customer_key"]
+        ) * 100
+        return repeat_customer_by_year
 
-    def purchase_frequency(self) -> float:
-        return self.df["order_number"].nunique() / self.df["customer_key"].nunique()
+    def purchase_frequency(self) -> pd.DataFrame:
+        df = self.df.groupby("year", as_index=False)[["order_number", "customer_key"]].nunique()
+        df["purchase_frequency"] = round(df["order_number"] / df["customer_key"], 2)
+        return df[['year', 'purchase_frequency']]
 
-    def customer_lifetime_value(self):
-        return (
-            SalesKPIs(self.df).avg_order_value()
-            * self.customer_lifespan()
-            * self.purchase_frequency()
-        )
+    def customer_growth_rate(self):
+        df = self.df.groupby("year", as_index=False)["customer_key"].nunique()
+        df["growth_rate"] = df["customer_key"].pct_change() * 100
+        return df
+    
 
     def customer_across_country(self) -> pd.DataFrame:
         return (
@@ -172,13 +164,6 @@ class CustomerKPIs(KPIs):
             .nunique()
             .sort_values("customer_key", ascending=False)  # type:ignore
             .rename(columns={"customer_key": "total_customer"})
-        )
-
-    def revenue_and_profit_by_country(self) -> pd.DataFrame:
-        return (
-            self.df.groupby("country", as_index=False)[["revenue", "profit"]]
-            .sum()
-            .sort_values("revenue", ascending=False)
         )
 
     def revenue_and_profit_by_age_group(self) -> pd.DataFrame:
