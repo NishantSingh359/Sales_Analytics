@@ -20,7 +20,7 @@ def load_gold() -> None:
    
 def create_date_table() -> None:
 
-    sales = pd.read_csv(r"data\\gold\\sales.csv")
+    sales = pd.read_csv(r"data\\gold\\sales.csv", parse_dates=['order_date'])
     start_date:str = sales['order_date'].min()
     end_date:str = sales['order_date'].max()
 
