@@ -43,4 +43,4 @@ def chart_format_number(value, pos):
     elif value >= 1000:
         return f"{value/1000:.1f}K"
     else:
-        return f"{value}"
+        return f"{value:.1f}"
