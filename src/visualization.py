@@ -18,10 +18,6 @@ def sales_kpis(df: pd.DataFrame) -> pd.DataFrame:
         "Total Revenue",
         "Total Profit",
         "Total Unit Sold",
-        "Profit Margin",
-        "Average Order Value",
-        "Average Selling Price",
-        "Average Delivery Time",
     ]
 
     values = [
@@ -29,36 +25,6 @@ def sales_kpis(df: pd.DataFrame) -> pd.DataFrame:
         co.format_number(skpi.total_revenue()),
         co.format_number(skpi.total_profit()),
         co.format_number(skpi.total_unit_sold()),
-        (co.format_number(skpi.profit_margin()) + "%"),
-        co.format_number(skpi.avg_order_value()),
-        co.format_number(skpi.avg_selling_price()),
-        skpi.avg_delivery_time(),
-    ]
-
-    df = pd.DataFrame({"KPIs": kpis, "Values": values})
-
-    return df
-
-
-def customer_kpis(df: pd.DataFrame) -> pd.DataFrame:
-    ckpi = mt.CustomerKPIs(df)
-    kpis = [
-        "Total Customer",
-        "Avg Order Per Customer",
-        "Avg Revenue Per Customer",
-        "Customer Lifespan",
-        "Purchase_Frequency",
-        "Customer Lifetime Value",
-        "Customer Repeat Rate",
-    ]
-    values = [
-        co.format_number(ckpi.total_customer()),
-        co.format_number(ckpi.avg_order_per_customer()),
-        co.format_number(ckpi.avg_revenue_per_customer()),
-        co.format_number(ckpi.customer_lifespan()) + " Month's",
-        co.format_number(ckpi.purchase_frequency()),
-        co.format_number(ckpi.customer_lifetime_value()),
-        co.format_number(ckpi.customer_repeat_rate()) + "%",
     ]
 
     df = pd.DataFrame({"KPIs": kpis, "Values": values})
