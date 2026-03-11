@@ -158,7 +158,7 @@ class PlotBase:
                 frameon=legend["frameon"],
             )
 
-        plt.savefig(f"../outputs/figures/{self.title}.jpg", dpi=300, bbox_inches="tight")
+        plt.savefig(f"../figures/{self.title}.jpg", dpi=300, bbox_inches="tight")
         plt.show()
 
     def config(self):
