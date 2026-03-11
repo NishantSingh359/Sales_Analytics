@@ -27,40 +27,39 @@ class SalesKPIs(KPIs):
         return self.df.groupby("order_number")["quantity"].sum().mean()
 
     def orders_by_year(self) -> pd.DataFrame:
-        return (
+        df = (
             self.df.groupby("year", as_index=False)["order_number"]
             .nunique()
             .rename(columns={"order_number": "total_order"})
-        ) # type: ignore     
+        )  # type: ignore
+        df["growth_rate"] = df["total_order"].pct_change() * 100
+        return df
 
     def revenue_by_year(self) -> pd.DataFrame:
-        return (
-            self.df.groupby("year", as_index=False)["revenue"]
-            .sum()
-        )  # type: ignore
+        df = self.df.groupby("year", as_index=False)["revenue"].sum()  # type: ignore
+        df["growth_rate"] = df["revenue"].pct_change() * 100
+        return df
 
     def avg_order_value(self) -> pd.DataFrame:
-        df = pd.merge(self.revenue_by_year(), self.orders_by_year(), how="left", on="year")
-        df['aov'] = df['revenue']/df['total_order']
-        return df[['year', 'aov']]
+        df = pd.merge(
+            self.revenue_by_year(), self.orders_by_year(), how="left", on="year"
+        )
+        df["aov"] = df["revenue"] / df["total_order"]
+        return df[["year", "aov"]]
 
     def revenue_by_month(self) -> pd.DataFrame:
-        return (
-            pd.pivot_table(
-                data=self.df,
-                index=["month", "month_name"],
-                columns=["year"],
-                values="amount",
-                aggfunc="sum",
-            )
-            .reset_index(drop=True)
-        )  # type: ignore
+        return pd.pivot_table(
+            data=self.df,
+            index=["month", "month_name"],
+            columns=["year"],
+            values="amount",
+            aggfunc="sum",
+        ).reset_index()
 
     def profit_by_year(self) -> pd.DataFrame:
-        return (
-            self.df.groupby("year", as_index=False)["profit"].sum()
-        ) #type: ignore
-    
+        df = self.df.groupby("year", as_index=False)["profit"].sum()
+        df['growth_rate'] = df['profit'].pct_change() * 100
+        return df
 
     def profit_by_month(self) -> pd.DataFrame:
         return (
@@ -114,10 +113,10 @@ class SalesKPIs(KPIs):
             .sort_values("amount", ascending=False)
             .rename(columns={"amount": "revenue"})
         )
-    
+
     def monthly_revenue(self) -> pd.Series:
-        return self.df.groupby(self.df['order_date'].dt.to_period('M'))['revenue'].sum()
-    
+        return self.df.groupby(self.df["order_date"].dt.to_period("M"))["revenue"].sum()
+
 
 class CustomerKPIs(KPIs):
 
@@ -143,20 +142,37 @@ class CustomerKPIs(KPIs):
             "customer_key"
         ].nunique()
         repeat_customer_by_year["repeat_rate"] = (
-            repeat_customer_by_year["customer_key"] / total_customer_by_year["customer_key"]
+            repeat_customer_by_year["customer_key"]
+            / total_customer_by_year["customer_key"]
         ) * 100
         return repeat_customer_by_year
 
     def purchase_frequency(self) -> pd.DataFrame:
-        df = self.df.groupby("year", as_index=False)[["order_number", "customer_key"]].nunique()
+        df = self.df.groupby("year", as_index=False)[
+            ["order_number", "customer_key"]
+        ].nunique()
         df["purchase_frequency"] = round(df["order_number"] / df["customer_key"], 2)
-        return df[['year', 'purchase_frequency']]
+        return df[["year", "purchase_frequency"]]
 
     def customer_growth_rate(self):
         df = self.df.groupby("year", as_index=False)["customer_key"].nunique()
         df["growth_rate"] = df["customer_key"].pct_change() * 100
         return df
-    
+
+    def CLV(self):
+        customer_year_revenue = (
+            self.df.groupby(["customer_key", "year"])["revenue"].sum().reset_index()
+        )
+
+        customer_year_revenue = customer_year_revenue.sort_values(
+            ["customer_key", "year"]
+        )
+        customer_year_revenue["clv"] = customer_year_revenue.groupby("customer_key")[
+            "revenue"
+        ].cumsum()
+
+        clv_year = customer_year_revenue.groupby("year")["clv"].mean().reset_index()
+        return clv_year
 
     def customer_across_country(self) -> pd.DataFrame:
         return (
@@ -177,9 +193,8 @@ class CustomerKPIs(KPIs):
         return (
             self.df.groupby("customer_key", as_index=False)["revenue"]
             .sum()
-            .sort_values('revenue', ascending=False)
-        )# type: ignore
-        
+            .sort_values("revenue", ascending=False)
+        )  # type: ignore
 
 
 class ProductKPIs(KPIs):
