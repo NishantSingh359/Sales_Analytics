@@ -22,7 +22,7 @@ The main questions explored in this project:
 ### Sales Performance
 #### Orders by Year
 
-<img src="outputs/figures/Orders by Year.jpg" width="600">
+<img src="figures/Orders by Year.jpg" width="600">
 
 Orders increase steadily over the years.
 Each year shows more orders than the previous one, which suggests the business is gradually expanding.
