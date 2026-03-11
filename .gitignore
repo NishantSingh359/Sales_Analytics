@@ -1,7 +1,6 @@
 # files
 *.csv
 .vscode
-*.jpg
 
 # python
 __pycache__/
