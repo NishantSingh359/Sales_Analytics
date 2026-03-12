@@ -24,22 +24,22 @@ The main questions explored in this project:
 
 <img src="figures/Orders by Year.jpg" width="600">
 
-Orders increase steadily over the years.
-Each year shows more orders than the previous one, which suggests the business is gradually expanding.
+- Orders increase 16.8% per year.
+- Each year shows more orders than the previous one, which suggests the business is gradually expanding.
 
 ### Revenue by Year
 
 <img src="figures/Revenue by Year.jpg" width="600">
 
-Revenue grows consistently over time.
-The increase appears steady rather than sudden, which suggests stable business growth.
+- Revenue increase 27.2% per year.
+- The increase appears steady rather than sudden, which suggests stable business growth.
 
 Profit by Year
 
 <img src="figures/Profit by Year.jpg" width="600">
 
-Profit follows a similar pattern as revenue.
-When revenue increases, profit also increases, showing that the growth is financially meaningful.
+- Profit increase 27.1% per year.
+- When revenue increases, profit also increases, showing that the growth is financially meaningful.
 
 ## Customer Behavior
 
@@ -47,70 +47,46 @@ When revenue increases, profit also increases, showing that the growth is financ
 
 <img src="figures/Average Revenue Per Customer.jpg" width="600">
 
-The average amount spent by each customer increases over time.
-This suggests customers are either purchasing more products or buying higher value items.
+- The average amount spent by each customer increases over time.
+- This suggests customers are either purchasing more products or buying higher value items.
 
 ### Repeat Customer Rate
 
 <img src="figures\Customer Repeat Rate.jpg" width="600">
 
-The repeat customer rate increases each year.
-More customers are returning to make additional purchases, which is a good sign for long-term stability.
-
-### Customer Purchase Frequency
-
-<img src="figures\Customer Purchase Frequency.jpg" width="600">
-
-Customers are placing slightly more orders over time.
-This gradual increase contributes to the growth in total sales.
+- Customer Repeat Rate in Five Years: 85.6%
+- More customers are returning to make additional purchases, which is a good sign for long-term stability.
 
 ### Customer Lifetime Value
 
 <img src="figures\Customer Life Time Value.jpg" width="600">
 
-Customer lifetime value increases year after year.
-This means each customer is generating more total revenue for the business over time.
-
-## Customer Demographics
-
-### Revenue and Profit by Age Group
-
-<img src="figures\Revenue & Profit by Customer Age Group.jpg" width="600">
-
-Adults generate the largest share of revenue and profit.
-Young adults contribute a smaller but still meaningful portion, while seniors contribute the least.
-
-## Customer Distribution by Country
+- Customer lifetime value increases year after year.
+- This means each customer is generating more total revenue for the business over time.
 
 ### Customers by Country
 
 <img src="figures\Customer by Country's.jpg" width="600">
 
-The United States has the largest number of customers.
-Other countries such as Australia, the United Kingdom, France, Canada, and Germany also contribute to the customer base.
+- The United States has the largest number of customers.
+- Other countries such as Australia, the United Kingdom, France, Canada, and Germany also contribute to the customer base.
 
 ## Product Performance
 
 ### Top Products by Revenue
 <img src="figures/Top Product by Revenue.jpg" width="650">
 
-This chart shows which products generate the most revenue.
-A small number of products contribute a large share of total sales.
-These products play an important role in overall business performance.
+- This chart shows which products generate the most revenue.
+- A small number of products contribute a large share of total sales.
+- These products play an important role in overall business performance.
 
 ### Product Sales Volume
 <img src="figures/Product Sales Volume.jpg" width="650">
 
-This chart shows how frequently each product is purchased.
-Some products sell in higher quantities, while others have lower demand.
+- This chart shows how frequently each product is purchased.
+- Some products sell in higher quantities, while others have lower demand.
+- Understanding which products sell the most helps identify the core products that support daily sales.
 
-Understanding which products sell the most helps identify the core products that support daily sales.
-
-### Revenue Distribution by Product Category
-<img src="figures/Revenue by Product Category.jpg" width="600">
-
-This chart compares how different product categories contribute to total revenue.
-It helps show which product groups are most important for the business.
 
 ## Sales Analysis – Key Observations
 
