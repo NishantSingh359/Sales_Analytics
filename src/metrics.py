@@ -58,7 +58,7 @@ class SalesKPIs(KPIs):
 
     def profit_by_year(self) -> pd.DataFrame:
         df = self.df.groupby("year", as_index=False)["profit"].sum()
-        df['growth_rate'] = df['profit'].pct_change() * 100
+        df["growth_rate"] = df["profit"].pct_change() * 100
         return df
 
     def profit_by_month(self) -> pd.DataFrame:
@@ -130,7 +130,12 @@ class CustomerKPIs(KPIs):
         df = self.df.groupby(["year", "customer_key"], as_index=False)["revenue"].sum()
         return df.groupby("year", as_index=False)["revenue"].mean()
 
-    def customer_repeat_rate(self) -> float:
+    def customer_repeat_rate_in_five_years(self) -> float:
+        df = self.df.groupby("customer_key", as_index=False)["customer_key"].count()
+        repeat_customer = df[df["customer_key"] > 1]
+        return round((len(repeat_customer) / self.total_customer())*100, 1)
+
+    def customer_repeat_rate(self) -> pd.DataFrame:
         df = self.df.groupby(["year", "customer_key"], as_index=False)[
             "customer_key"
         ].count()
