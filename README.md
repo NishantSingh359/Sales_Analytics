@@ -20,21 +20,16 @@ The main questions explored in this project:
 - Which markets have the most customers?
 
 ## Sales Performance
-### Orders by Year
 
 <img src="figures/Orders by Year.jpg" width="600">
 
 - Orders increase 16.8% per year.
 - Each year shows more orders than the previous one, which suggests the business is gradually expanding.
 
-### Revenue by Year
-
 <img src="figures/Revenue by Year.jpg" width="600">
 
 - Revenue increase 27.2% per year.
 - The increase appears steady rather than sudden, which suggests stable business growth.
-
-Profit by Year
 
 <img src="figures/Profit by Year.jpg" width="600">
 
@@ -43,28 +38,20 @@ Profit by Year
 
 ## Customer Behavior
 
-### Average Revenue per Customer
-
 <img src="figures/Average Revenue Per Customer.jpg" width="600">
 
 - The average amount spent by each customer increases over time.
 - This suggests customers are either purchasing more products or buying higher value items.
-
-### Repeat Customer Rate
 
 <img src="figures\Customer Repeat Rate.jpg" width="600">
 
 - Customer Repeat Rate in Five Years: 85.6%
 - More customers are returning to make additional purchases, which is a good sign for long-term stability.
 
-### Customer Lifetime Value
-
 <img src="figures\Customer Life Time Value.jpg" width="600">
 
 - Customer lifetime value increases year after year.
 - This means each customer is generating more total revenue for the business over time.
-
-### Customers by Country
 
 <img src="figures\Customer by Country's.jpg" width="600">
 
@@ -73,14 +60,12 @@ Profit by Year
 
 ## Product Performance
 
-### Top Products by Revenue
 <img src="figures/Top Product by Revenue.jpg" width="650">
 
 - This chart shows which products generate the most revenue.
 - A small number of products contribute a large share of total sales.
 - These products play an important role in overall business performance.
 
-### Product Sales Volume
 <img src="figures/Product Sales Volume.jpg" width="650">
 
 - This chart shows how frequently each product is purchased.
@@ -123,3 +108,4 @@ Profit by Year
 - Product demand varies across the catalog.
 
 - Top products strongly influence total sales.
+
